@@ -1,0 +1,46 @@
+version: '3.7'
+
+services:
+
+  # Redis
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    volumes:
+      - .:/django
+      - static:/static
+    env_file:
+      - .env
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    container_name: backend_container
+    
+  frontend:
+    build:
+      context: ./frontend
+    volumes:
+      - frontend:/app/build
+    container_name: frontend_container
+  nginx:
+    build:
+      context: ./nginx
+    volumes:
+      - static:/static
+      - frontend:/var/www/frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - redis
+      - backend
+      - frontend
+
+
+volumes:
+  static:
+  frontend:
